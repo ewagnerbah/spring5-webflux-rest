@@ -1,6 +1,8 @@
 package guru.springframework.spring5webfluxrest.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 
 // import java.util.stream.Stream;
 
@@ -60,5 +62,31 @@ public class CategoryControllerTest {
         Mono<Category> catToUpdateMono = Mono.just(Category.builder().description("Some Cat").build());
 
         webTestClient.put().uri("/api/v1/categories/asdf").body(catToUpdateMono, Category.class).exchange().expectStatus().isOk();
+    }
+
+    @Test
+    void testPatch(){
+        BDDMockito.given(categoryRepository.findById(anyString())).willReturn(Mono.just(Category.builder().build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class))).willReturn(Mono.just(Category.builder().build()));
+
+        Mono<Category> catToUpdateMono = Mono.just(Category.builder().description("Some Cat").build());
+
+        webTestClient.patch().uri("/api/v1/categories/asdf").body(catToUpdateMono, Category.class).exchange().expectStatus().isOk();
+
+        BDDMockito.verify(categoryRepository).save(any());
+    }
+
+    @Test
+    void testPatchNoChanges(){
+        BDDMockito.given(categoryRepository.findById(anyString())).willReturn(Mono.just(Category.builder().build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class))).willReturn(Mono.just(Category.builder().build()));
+
+        Mono<Category> catToUpdateMono = Mono.just(Category.builder().build());
+
+        webTestClient.patch().uri("/api/v1/categories/asdf").body(catToUpdateMono, Category.class).exchange().expectStatus().isOk();
+
+        BDDMockito.verify(categoryRepository, never()).save(any());
     }
 }
